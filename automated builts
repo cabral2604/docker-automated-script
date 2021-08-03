@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#auth: nora
+#Description: Docker image creation
+#Date: 07/30/2021
+
+#Label Maintainer: nora29@gmail.com
+
+echo -e "are you working on centos or ubuntu?"
+read base
+
+if [ ${base} = centos ]
+then
+    yum install docker -y
+fi
+
+if  [ ${base} = ubuntu ]
+then
+    apt-get install docker.io -y
+fi
+
+echo -e "\n what is your name?\n"
+read name
+
+echo -e "\nwhat version of image are you using?\n"
+read v
+
+echo -e "\ndo you want to copy this container into your system?\n"
+read vol
+
+echo -e "\nwhat port do you want to expose?\n"
+read p
+
+echo -e "\nWhat port do you want to expose the running container in? Please use numbers only!"
+read n
+
+echo -e "\nwhat base image do you prefer? (centos, ubuntu, alpine, debian)\n"
+read base
+
+echo -e "\nwhat application do you want to use? (i.e httpd, wget, curl, finger)\n"
+read app
+
+echo -e "\nwhat is the name of the file you want to copy into?\n"
+read f
+
+echo -e "\nwhat is the name of the file or directory you want to copy into this image?(make sure this script is running in the same location)\n"
+
+echo -e "\nbuilding ${base} image, version ${v} port ${p} opened and installing application ${app}\n"
+
+echo -e "\nFROM ${base}:${v} \nMAINTAINER ${name} \nRUN yum update -y \nRUN yum install ${app} -y\n EXPOSE ${p}\n COPY ./index.html /var/www/html \nCMD apachectl -D FOREGROUND\n" > Dockerfile
+
+docker build -t ${name}/${base}:${v} .
+
+docker run -itd -v ${vol}:/var/www/html -p ${p}:${n} ${name}/${base}
+
+if [ $? -eq 0 ]
+then
+echo -e "created successfully"
+
+rm -f Dockerfile
+
+else
+echo -e "no bueno"
+fi
